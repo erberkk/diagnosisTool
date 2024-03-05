@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Reference Values{% endblock %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<style type="text/css">
+    .table thead th {
+        vertical-align: bottom;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .table td, .table th {
+        padding: .75rem;
+        vertical-align: top;
+        border-top: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    .table-bordered {
+        border: 1px solid #dee2e6;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+        transform: scale(1.02);
+        transition: transform 0.3s ease-in-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Reference Values for Blood Tests</h2>
+    <!-- Kan testleri için referans değerlerini içeren tablo -->
+    <table class="table table-bordered table-hover">
+        <thead class="thead-light">
+            <tr>
+                <th>Test</th>
+                <th>Male Reference Range</th>
+                <th>Female Reference Range</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Her test için erkek ve kadın referans aralıklarını içeren satırlar -->
+            <tr>
+                <td>RBC (x10^12/L)</td>
+                <td>4.7 - 6.1</td>
+                <td>4.2 - 5.4</td>
+            </tr>
+            <tr>
+                <td>Hemoglobin (g/dL)</td>
+                <td>13.8 - 17.2</td>
+                <td>12.1 - 15.1</td>
+            </tr>
+            <tr>
+                <td>Hematocrit (%)</td>
+                <td>40.7 - 50.3</td>
+                <td>36.1 - 44.3</td>
+            </tr>
+            <tr>
+                <td>MCV (fL)</td>
+                <td>80 - 96</td>
+                <td>81 - 99</td>
+            </tr>
+            <tr>
+                <td>MCH (pg)</td>
+                <td>27.5 - 33.2</td>
+                <td>27.0 - 32.0</td>
+            </tr>
+            <tr>
+                <td>MCHC (g/dL)</td>
+                <td>32.0 - 36.0</td>
+                <td>32.0 - 36.0</td>
+            </tr>
+            <tr>
+                <td>RDW (%)</td>
+                <td>11.5 - 14.5</td>
+                <td>11.5 - 14.5</td>
+            </tr>
+            <tr>
+                <td>WBC (x10^9/L)</td>
+                <td>4.5 - 11.0</td>
+                <td>4.5 - 11.0</td>
+            </tr>
+            <tr>
+                <td>Neutrophils (%)</td>
+                <td>40 - 60</td>
+                <td>40 - 60</td>
+            </tr>
+            <tr>
+                <td>Lymphocytes (%)</td>
+                <td>20 - 40</td>
+                <td>20 - 40</td>
+            </tr>
+            <tr>
+                <td>Monocytes (%)</td>
+                <td>2 - 8</td>
+                <td>2 - 8</td>
+            </tr>
+            <tr>
+                <td>Eosinophils (%)</td>
+                <td>1 - 4</td>
+                <td>1 - 4</td>
+            </tr>
+            <tr>
+                <td>Basophils (%)</td>
+                <td>0.5 - 1</td>
+                <td>0.5 - 1</td>
+            </tr>
+            <tr>
+                <td>Platelets (x10^9/L)</td>
+                <td>150 - 400</td>
+                <td>150 - 400</td>
+            </tr>
+            <tr>
+                <td>PDW (%)</td>
+                <td>9 - 17</td>
+                <td>9 - 17</td>
+            </tr>
+            <tr>
+                <td>MPV (fL)</td>
+                <td>7.4 - 10.4</td>
+                <td>7.4 - 10.4</td>
+            </tr>
+            <tr>
+                <td>PCT (%)</td>
+                <td>0.108 - 0.282</td>
+                <td>0.108 - 0.282</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

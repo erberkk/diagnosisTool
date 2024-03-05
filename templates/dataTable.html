@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% block title %}Patient Data Table{% endblock %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<style type="text/css">
+    .btn-info {
+        background-color: #535C91; /* Bootstrap info rengi */
+        color: white;
+        border: none;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .btn-info:hover {
+        background-color: #1B1A55; /* Daha koyu bir ton */
+        transform: scale(1.1); /* Butonu biraz büyüt */
+    }
+
+    .btn-info:active {
+        background-color: #117a8b; /* Daha da koyu bir ton */
+        transform: scale(0.9); /* Butonu biraz küçült */
+    }
+
+    .btn-info:focus {
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.5); /* Focus halinde bir gölge ekle */
+    }
+
+    #patientTable td, #patientTable th {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .buttonContainer {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Add some space between buttons */
+    }
+
+    .downloadExcel, .printButton {
+        border-radius: 10px;
+        padding: 8px 16px;
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+        font-size: 14px;
+    }
+
+    .downloadExcel {
+        background-color: #82CD47;
+    }
+
+    .downloadExcel:hover {
+        background-color: #54B435;
+        transform: scale(1.1);
+    }
+
+    .downloadExcel:active {
+        background-color: #3e8e41;
+        transform: scale(0.9);
+    }
+
+    .printButton {
+        background-color: #9E9FA5; /* Change the background color */
+    }
+
+    .printButton:hover {
+        background-color: #61677A;
+        transform: scale(1.1);
+    }
+
+    .printButton:active {
+        background-color: #0056b3;
+        transform: scale(0.9);
+    }
+</style>
+<script>
+    // Excel dosyası indirme işlevi
+    function downloadExcel() {
+        $.ajax({
+            url: '/api/diagnosis', // Flask endpoint
+            type: 'GET',
+            success: function (patients) {
+                // Define the headers for the Excel file
+                const headers = [
+                    "Name", "Age", "Weight", "Height", "BMI", "Sigara", "Alkol", "Drug",
+                    "FamilyHistory", "BloodPressure", "Symptom"
+                ];
+
+                // Add headers for blood values based on the first patient's data
+                // This assumes that all patients have similar blood value structure
+                if (patients.length > 0 && patients[0].blood_values) {
+                    patients[0].blood_values.forEach((value, index) => {
+                        Object.keys(value).forEach(key => {
+                            headers.push(`BloodValue_${index + 1}_${key}`);
+                        });
+                    });
+                }
+
+                // Map patient data to formatted objects for Excel
+                const formattedPatients = patients.map(patient => {
+                    // Create a base object with patient details
+                    const patientBase = {
+                        Name: patient.name,
+                        Age: patient.age,
+                        Weight: patient.weight,
+                        Height: patient.height,
+                        BMI: patient.bmi,
+                        Sigara: patient.sigara ? "Yes" : "No",
+                        Alkol: patient.alkol ? "Yes" : "No",
+                        Drug: patient.drug ? "Yes" : "No",
+                        FamilyHistory: patient.familyHistory,
+                        BloodPressure: patient.bloodPressure,
+                        Symptom: patient.symptom
+                    };
+
+                    // Add blood values to the base object
+                    patient.blood_values.forEach((value, index) => {
+                        Object.keys(value).forEach(key => {
+                            patientBase[`BloodValue_${index + 1}_${key}`] = value[key];
+                        });
+                    });
+
+                    return patientBase;
+                });
+
+                // Use SheetJS to create the Excel file with headers
+                var ws = XLSX.utils.json_to_sheet(formattedPatients, {header: headers});
+                var wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Patients");
+                XLSX.writeFile(wb, "Patient_List.xlsx");
+            },
+            error: function (error) {
+                console.error("Error creating Excel file: ", error);
+            }
+        });
+    }
+
+    // Hasta bilgilerini yazdırma işlevi
+    function printPatientData() {
+        var patientName = prompt("Please enter the patient's name:");
+
+        $.ajax({
+            url: '/api/patients/' + patientName,
+            type: 'GET',
+            success: function(patientData) {
+                var printWindow = window.open('', '_blank');
+                printWindow.document.write('<h2>Patient Data</h2>');
+                printWindow.document.write('<html><head><title>Patient Data</title></head><body>');
+                printWindow.document.write('<table border="1">');
+                printWindow.document.write('<tr><th>Name</th><td>' + patientData.name + '</td></tr>');
+                printWindow.document.write('<tr><th>Age</th><td>' + patientData.age + '</td></tr>');
+                printWindow.document.write('<tr><th>Weight</th><td>' + patientData.weight + '</td></tr>');
+                printWindow.document.write('<tr><th>Height</th><td>' + patientData.height + '</td></tr>');
+                printWindow.document.write('<tr><th>BMI</th><td>' + patientData.bmi + '</td></tr>');
+                printWindow.document.write('<tr><th>Sigara</th><td>' + (patientData.sigara ? 'Yes' : 'No') + '</td></tr>');
+                printWindow.document.write('<tr><th>Alkol</th><td>' + (patientData.alkol ? 'Yes' : 'No') + '</td></tr>');
+                printWindow.document.write('<tr><th>Drug</th><td>' + (patientData.drug ? 'Yes' : 'No') + '</td></tr>');
+                printWindow.document.write('<tr><th>Family History</th><td>' + patientData.familyHistory + '</td></tr>');
+                printWindow.document.write('<tr><th>Blood Pressure</th><td>' + patientData.bloodPressure + '</td></tr>');
+                printWindow.document.write('<tr><th>Symptom</th><td>' + (patientData.symptom ? patientData.symptom : 'None') + '</td></tr>');
+                printWindow.document.write('</table>');
+
+                // Blood Values
+                printWindow.document.write('<h2>Blood Values</h2>');
+                patientData.blood_values.forEach(function(bloodValue, index) {
+                    printWindow.document.write('<h3>Blood Value ' + (index + 1) + '</h3>');
+                    printWindow.document.write('<table border="1">');
+                    printWindow.document.write('<tr><th>Blood Type</th><td>' + bloodValue.bloodType + '</td></tr>');
+                    printWindow.document.write('<tr><th>RBC</th><td>' + bloodValue.rbc + '</td></tr>');
+                    printWindow.document.write('<tr><th>Hemoglobin</th><td>' + bloodValue.hemoglobin + '</td></tr>');
+                    printWindow.document.write('<tr><th>Hematocrit</th><td>' + bloodValue.hematocrit + '</td></tr>');
+                    printWindow.document.write('<tr><th>MCV</th><td>' + bloodValue.mcv + '</td></tr>');
+                    printWindow.document.write('<tr><th>MCH</th><td>' + bloodValue.mch + '</td></tr>');
+                    printWindow.document.write('<tr><th>MCHC</th><td>' + bloodValue.mchc + '</td></tr>');
+                    printWindow.document.write('<tr><th>RDW</th><td>' + bloodValue.rdw + '</td></tr>');
+                    printWindow.document.write('<tr><th>WBC</th><td>' + bloodValue.wbc + '</td></tr>');
+                    printWindow.document.write('<tr><th>Neutrophill</th><td>' + bloodValue.neutrophill + '</td></tr>');
+                    printWindow.document.write('<tr><th>Lymphocyte</th><td>' + bloodValue.lymphocyte + '</td></tr>');
+                    printWindow.document.write('<tr><th>Monocyte</th><td>' + bloodValue.monocyte + '</td></tr>');
+                    printWindow.document.write('<tr><th>Eosinophill</th><td>' + bloodValue.eosinophill + '</td></tr>');
+                    printWindow.document.write('<tr><th>Basophill</th><td>' + bloodValue.basophill + '</td></tr>');
+                    printWindow.document.write('<tr><th>Platelet</th><td>' + bloodValue.platelet + '</td></tr>');
+                    printWindow.document.write('<tr><th>PDW</th><td>' + bloodValue.pdw + '</td></tr>');
+                    printWindow.document.write('<tr><th>MPV</th><td>' + bloodValue.mpv + '</td></tr>');
+                    printWindow.document.write('<tr><th>PCT</th><td>' + bloodValue.pct + '</td></tr>');
+                    printWindow.document.write('</table>');
+                });
+
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.print();
+                printWindow.close();
+            },
+            error: function(error) {
+                alert("Error fetching patient data: " + JSON.stringify(error));
+            }
+        });
+    }
+
+    // DataTables eklentisini etkinleştirme
+    $(document).ready(function() {
+        $('#patientTable').DataTable();
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="buttonContainer">
+    <button class="printButton" onclick="printPatientData()">Print</button>
+    <button class="downloadExcel" onclick="downloadExcel()">Download Excel</button>
+</div>
+
+<div class="container mt-5">
+    <h2>Patient Data Table</h2>
+    <table id="patientTable" class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <!-- Tablo başlıkları -->
+                <th>Name</th>
+                <th>Age</th>
+                <th>Weight</th>
+                <th>Height</th>
+                <th>BMI</th>
+                <th>Sigara</th>
+                <th>Alkol</th>
+                <th>Drug</th>
+                <th>Family History</th>
+                <th>Blood Pressure</th>
+                <th>Symptom</th>
+                <th>Blood Values</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in patients %}
+            <tr>
+                <!-- Hasta bilgileri -->
+                <td>{{ patient.name }}</td>
+                <td>{{ patient.age }}</td>
+                <td>{{ patient.weight }}</td>
+                <td>{{ patient.height }}</td>
+                <td>{{ patient.bmi }}</td>
+                <td>{{ patient.sigara }}</td>
+                <td>{{ patient.alkol }}</td>
+                <td>{{ patient.drug }}</td>
+                <td>{{ patient.familyHistory }}</td>
+                <td>{{ patient.bloodPressure }}</td>
+                <td>{{ patient.symptom }}</td>
+                <td>
+                    <!-- Kan değerleri için modal tetikleyici buton -->
+                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#bloodValuesModal{{ patient._id }}">☰</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% for patient in patients %}
+<!-- Kan değerleri için modal -->
+<div class="modal fade" id="bloodValuesModal{{ patient._id }}" tabindex="-1" role="dialog" aria-labelledby="bloodValuesModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="bloodValuesModalLabel">Blood Values for {{ patient.name }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {% for value in patient.blood_values %}
+        <!-- Kan değerleri bilgileri -->
+        <p><strong>Blood Type: </strong> {{  value.bloodType }} </p>
+        <p><strong>RBC: </strong> {{ value.rbc }} </p>
+        <p><strong>Hemoglobin: </strong> {{ value.hemoglobin }} </p>
+        <p><strong>Hematocrit: </strong> {{ value.hematocrit }}</p>
+        <p><strong>MCV: </strong> {{ value.mcv }} </p>
+        <p><strong>MCH: </strong> {{ value.mch }} </p>
+        <p><strong>MCHC: </strong> {{ value.mchc }} </p>
+        <p><strong>RDW: </strong> {{ value.rdw }} </p>
+        <p><strong>WBC: </strong> {{ value.wbc }}</p>
+        <p><strong>Neutrophill: </strong> {{ value.neutrophill }}</p>
+        <p><strong>Lymphocyte: </strong> {{ value.lymphocyte }} </p>
+        <p><strong>Monocyte: </strong> {{ value.monocyte }}</p>
+        <p><strong>Eosinophill: </strong> {{ value.eosinophill }}</p>
+        <p><strong>Basophill: </strong> {{ value.basophill }}</p>
+        <p><strong>Platelet: </strong> {{ value.platelet }}</p>
+        <p><strong>PDW: </strong> {{ value.pdw }}</p>
+        <p><strong>MPV: </strong> {{ value.mpv }}</p>
+        <p><strong>PCT: </strong> {{ value.pct }}</p>
+
+        {% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

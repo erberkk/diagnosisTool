@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Patient Data Submission{% endblock %}
+{% block head %}
+{{ super() }}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+<style type="text/css">
+    .newData {
+        border-radius: 10px;
+        padding: 8px 16px;
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+        font-size: 14px;
+        background-color: #50C4ED; /* Change the background color */
+    }
+
+    .newData:hover {
+        background-color: #387ADF;
+        transform: scale(1.1);
+    }
+
+    .newData:active {
+        background-color: #387ADF;
+        transform: scale(0.9);
+    }
+</style>
+<script>
+    // BMI hesaplama işlevi
+    document.addEventListener("DOMContentLoaded", function() {
+        function calculateBMI() {
+            var weight = document.getElementById('weight').value; // Kilonun alınması
+            var height = document.getElementById('height').value; // Boyun alınması (cm olarak)
+
+            if(weight > 0 && height > 0) {
+                height = height / 100; // cm'yi metreye çevirme
+                var bmi = weight / (height * height); // BMI hesaplama
+                document.getElementById('bmi').value = bmi.toFixed(2); // BMI değerini yuvarla ve BMI alanına yaz
+            }
+        }
+
+        // Kilo ve boy input alanlarını dinle ve herhangi bir değişiklikte calculateBMI fonksiyonunu çağır
+        document.getElementById('weight').addEventListener('input', calculateBMI);
+        document.getElementById('height').addEventListener('input', calculateBMI);
+    });
+</script>
+
+{% endblock %}
+
+{% block content %}
+<div class="py-5">
+    <h2 class="text-center">Patient Data Form</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Hasta veri formu -->
+            <form action="/submit" method="post" enctype="multipart/form-data">
+                <!-- İsim, yaş, kilo, boy, sigara, alkol, uyuşturucu, semptom, aile geçmişi, kan basıncı ve kan değerleri alanları -->
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" class="form-control" name="name" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="age">Age:</label>
+                    <input type="number" class="form-control" name="age" id="age" required>
+                </div>
+                <div class="form-group">
+                    <label for="weight">Weight (kg):</label>
+                    <input type="number" class="form-control" name="weight" id="weight" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label for="height">Height (cm):</label>
+                    <input type="number" class="form-control" name="height" id="height" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label for="bmi">BMI:</label>
+                    <input disabled type="number" class="form-control" name="bmi" id="bmi" step="0.1" required>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" name="sigara" id="sigara">
+                    <label class="form-check-label" for="sigara">Smoke</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" name="alkol" id="alkol">
+                    <label class="form-check-label" for="alkol">Alcohol</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" name="drug" id="drug">
+                    <label class="form-check-label" for="drug">Drug</label>
+                </div>
+                <div class="form-group">
+                    <label for="symptom">Symptoms:</label>
+                    <input type="text" class="form-control" name="symptom" id="symptom">
+                </div>
+                <div class="form-group">
+                    <label for="familyHistory">Family History:</label>
+                    <input type="text" class="form-control" name="familyHistory" id="familyHistory">
+                </div>
+                <div class="form-group">
+                    <label for="bloodPressure">Blood Pressure:</label>
+                    <input type="text" class="form-control" name="bloodPressure" id="bloodPressure">
+                </div>
+                <div class="form-group">
+                    <label for="bloodValues">Blood Values (Excel):</label>
+                    <input type="file" class="form-control-file" name="bloodValues" id="bloodValues" accept=".xlsx">
+                </div>
+                <button type="submit" class="newData">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
