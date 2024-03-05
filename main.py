@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import functools
 import os
 from flask import Flask, redirect, render_template, request, session, url_for, jsonify
